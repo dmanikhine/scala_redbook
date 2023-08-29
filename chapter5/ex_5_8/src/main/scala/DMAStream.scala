@@ -42,7 +42,7 @@ case Cons(h,t) => f(h(), t().foldRight(z)(f))
 case _ => z
 }
 
-
+def map[A,B](f:A=>B):Stream[B] 
 
 }
 

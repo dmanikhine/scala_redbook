@@ -2,7 +2,7 @@
 object Main extends App { 
   
   val ones:Stream[Int]=Cons(()=>1,()=>ones)
-  println(Func.fibs2.take(10).toList)
+  println(Func.constant2("ABC").take(10).toList)
 
 }
 
