@@ -10,6 +10,12 @@ def headOption: Option[A]= this match {
         case _ => println("empty")
     }
 
+ def getHead[B>:A](emptyHead: B):B =this match {
+        case Empty => emptyHead
+        case Cons(h,t) => h()
+    }
+    
+
 def toList:List[A] ={
   @annotation.tailrec
       def go(acc: List[A], s: Stream[A] ): List[A] = s match {
@@ -18,6 +24,17 @@ def toList:List[A] ={
         }
     go(List(),this).reverse
 }
+
+def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+  case Cons(h,t) => f(h(), t().foldRight(z)(f))
+  case _ => z
+}
+/* 
+Since `&&` is non-strict in its second argument, this terminates the traversal as soon as a nonmatching element is found. 
+*/
+def forAll(f: A => Boolean): Boolean =
+  foldRight(true)((a,b) => f(a) && b)
+
 
 
 def mapViaUnfold[B](f:A=>B):Stream[B] =
@@ -45,6 +62,26 @@ Func.unfold((this,s2))
 {case (Cons(h1,t1),Cons(h2,t2)) => Some((f(h1(),h2()),(t1(),t2())))
  case _ => None
 }
+
+
+def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] =
+  Func.unfold((this, s2)) {
+    case (Empty, Empty) => None
+    case (Cons(h, t), Empty) => Some(f(Some(h()), None) -> (t(), Empty))
+    case (Empty, Cons(h, t)) => Some(f(None, Some(h())) -> (Empty -> t()))
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
+  }
+
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] =
+  zipWithAll(s2)((_,_))
+
+ def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((Stream(z)))((a, p0) => {
+      // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+      lazy val p1 = p0
+      Stream.cons(f(a, p1.getHead(z)),p1)    
+    })
+
 
 }
 

@@ -6,7 +6,9 @@ object Main extends App {
   val t2:Stream[Int]=Func.unfold(10)(n =>Some((n,n+1)))
   
   println(t1.zipWith(t2)(_ + _).takeViaUnfold(10).toList)
-    
+  println(t2.getHead(0))
+
+  println(Stream(1,2,3).scanRight(0)(_ + _).toList)
 
 }
 
